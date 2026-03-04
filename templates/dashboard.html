@@ -2,35 +2,74 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Dashboard API Monitoring</title>
+  <title>Atelier M1 — Tests API</title>
   <style>
     body{font-family:Arial;margin:24px}
-    table{border-collapse:collapse;width:100%}
+    .top{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+    a.btn{display:inline-block;padding:10px 14px;border:1px solid #ddd;text-decoration:none;border-radius:8px}
+    table{border-collapse:collapse;width:100%;margin-top:12px}
     th,td{border:1px solid #ddd;padding:8px}
     th{background:#f5f5f5;text-align:left}
     .ok{color:green;font-weight:bold}
     .ko{color:#b00020;font-weight:bold}
+    .card{border:1px solid #eee;border-radius:10px;padding:12px;margin:12px 0}
+    code{background:#f6f6f6;padding:2px 6px;border-radius:6px}
   </style>
 </head>
 <body>
-  <h1>Dashboard - API Monitoring (ipify)</h1>
-  <p><a href="/run">▶ Lancer un run</a></p>
+  <h1>Atelier — Automatisation des tests d’API publiques</h1>
+  <div class="top">
+    <a class="btn" href="/run">▶ Lancer les tests</a>
+    <a class="btn" href="/dashboard">Voir l’historique</a>
+  </div>
 
+  {% if last %}
+  <div class="card">
+    <div><b>Dernier run</b> : {{ last.ts }} (UTC)</div>
+    <div>API : <code>{{ last.api_name }}</code></div>
+    <div>QoS : Avg <b>{{"%.1f"|format(last.avg_ms)}}</b> ms — P95 <b>{{"%.1f"|format(last.p95_ms)}}</b> ms</div>
+    <div>Tests : <span class="ok">PASS {{ last.passed }}</span> / <span class="ko">FAIL {{ last.failed }}</span></div>
+  </div>
+
+  <h2>Résultats des tests (dernier run)</h2>
   <table>
     <thead>
       <tr>
-        <th>Date</th><th>API</th><th>Avg ms</th><th>P95 ms</th><th>Passed</th><th>Failed</th>
+        <th>Test</th><th>Status</th><th>HTTP</th><th>Latence (ms)</th><th>Détails</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tests %}
+      <tr>
+        <td>{{ t.name }}</td>
+        <td class="{{ 'ok' if t.status=='PASS' else 'ko' }}">{{ t.status }}</td>
+        <td>{{ t.http }}</td>
+        <td>{{ t.latency_ms }}</td>
+        <td>{{ t.details }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>Aucun run pour l’instant. Clique sur <a href="/run">/run</a>.</p>
+  {% endif %}
+
+  <h2>Historique</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>API</th><th>Avg ms</th><th>P95 ms</th><th>PASS</th><th>FAIL</th>
       </tr>
     </thead>
     <tbody>
       {% for r in runs %}
       <tr>
-        <td>{{r.ts}}</td>
-        <td>{{r.api_name}}</td>
+        <td>{{ r.ts }}</td>
+        <td>{{ r.api_name }}</td>
         <td>{{"%.1f"|format(r.avg_ms)}}</td>
         <td>{{"%.1f"|format(r.p95_ms)}}</td>
-        <td class="ok">{{r.passed}}</td>
-        <td class="ko">{{r.failed}}</td>
+        <td class="ok">{{ r.passed }}</td>
+        <td class="ko">{{ r.failed }}</td>
       </tr>
       {% endfor %}
     </tbody>
