@@ -13,18 +13,19 @@ def init_db():
             avg_ms REAL NOT NULL,
             p95_ms REAL NOT NULL,
             passed INTEGER NOT NULL,
-            failed INTEGER NOT NULL
+            failed INTEGER NOT NULL,
+            details TEXT
         )
         """)
         con.commit()
 
-def save_run(ts: str, api_name: str, avg_ms: float, p95_ms: float, passed: int, failed: int):
+def save_run(ts: str, api_name: str, avg_ms: float, p95_ms: float, passed: int, failed: int, details: str = ""):
     init_db()
     with sqlite3.connect(DB_PATH) as con:
         con.execute("""
-        INSERT INTO runs(ts, api_name, avg_ms, p95_ms, passed, failed)
-        VALUES(?,?,?,?,?,?)
-        """, (ts, api_name, avg_ms, p95_ms, passed, failed))
+        INSERT INTO runs(ts, api_name, avg_ms, p95_ms, passed, failed, details)
+        VALUES(?,?,?,?,?,?,?)
+        """, (ts, api_name, avg_ms, p95_ms, passed, failed, details))
         con.commit()
 
 def list_runs(limit: int = 50):
